@@ -1,0 +1,13 @@
+10/21/19 - N. Anderson
+Add processing file.  This file displays toggle buttons on the screen that allow on/off control of all ball valves and all power relays.
+The file also displays all of the temperature sensors and the flow sensors for display to the user.
+
+File takes status of the buttons and transmits them over serial, baud rate 115200, to the physical controller (arduino) to control the ball valves.
+The transmit message format can be found in the Message Breakdown.xlsx file.  This will show what the first character the arduino should be looking for, and what it means
+
+Next steps.
+1. create serial message parsing in arduino controller to handle parsing the messages sent from processing.
+2. Design arduino controller software to control individual ball valves and power relays based on serial message values.
+3. Verify proper reading of temperature sensors and flow sensors in arduino
+4. transmit temperature sensors and flow sensor outputs to processing via serial, baud rate 115200.
+5. Create serial message parsing in processing controller to handle parsing the messages sent from arduino for temperature sensors and flow sensors.
