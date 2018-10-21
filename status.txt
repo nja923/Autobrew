@@ -11,3 +11,4 @@ Next steps.
 3. Verify proper reading of temperature sensors and flow sensors in arduino
 4. transmit temperature sensors and flow sensor outputs to processing via serial, baud rate 115200.
 5. Create serial message parsing in processing controller to handle parsing the messages sent from arduino for temperature sensors and flow sensors.
+6. Begin Stage 2 of project.
