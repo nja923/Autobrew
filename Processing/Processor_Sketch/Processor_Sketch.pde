@@ -8,12 +8,12 @@ PFont font, font_title, font_buttons, font_0, font_labels;
 
 int button_y_size = 50;    //y size of the button
 int button_x_size = 120;   //x size of the button
-int temp_sensor_1 = 51;
-int temp_sensor_2 = 52;
-int temp_sensor_3 = 53;
 int temp_sensor_4 = 54;
-int flow_meter_1 = 55;
-int flow_meter_2 = 56;
+String flow_meter_1 = "55";//, flow_meter_2, temp_sensor_1, temp_sensor_2, temp_sensor_3;
+String flow_meter_2 = "55";
+String temp_sensor_1 = "55";
+String temp_sensor_2 = "55";
+String temp_sensor_3= "55";
 boolean BV1, BV2, BV3, BV4, BV5, BV6, BV7, BV8, BV9, BV10, PR1, PR2, PR3, PR4, ALL_PR_OFF, BV_ALL_OFF;
 boolean ball_valve_1_status;
 boolean ball_valve_2_status;
@@ -24,7 +24,7 @@ boolean ball_valve_6_status;
 boolean ball_valve_7_status;
 boolean ball_valve_8_status;
 boolean ball_valve_9_status;
-int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte_6;
+int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte_6, id_byte, inByte_7;
 
 
 void setup(){ //same as arduino program
@@ -48,49 +48,55 @@ void setup(){ //same as arduino program
 //Set up Flow Meter Text Boxes//
 ////////////////////////////////
       
-  cp5.addNumberbox("Flow_Meter_1")
-     .setPosition(200,70)
-     .setSize(120,30)
-     .setScrollSensitivity(1.1)
-     .setValue(flow_meter_1)
-     .setFont(font_buttons)
-   ;
+  //cp5.addNumberbox("Flow_Meter_1")
+  //   .setPosition(200,70)
+  //   .setSize(120,30)
+  //   .setScrollSensitivity(1.1)
+  //   //.setValue(flow_meter_1)
+  //   //.setFont(font_buttons)
+  // ;
    
-   cp5.addNumberbox("Flow_Meter_2")
-     .setPosition(200,130)
-     .setSize(120,30)
-     .setScrollSensitivity(1.1)
-     .setValue(flow_meter_2)
-     .setFont(font_buttons)
-   ;
+   //cp5.addToggle("Flow Meter 1")
+   // .setPosition(200, 70)
+   // .setSize(120,30)
+   // .setFont(font_buttons)
+   // ;
+   
+   //cp5.addNumberbox("Flow_Meter_2")
+   //  .setPosition(200,130)
+   //  .setSize(120,30)
+   //  .setScrollSensitivity(1.1)
+   //  .setValue(flow_meter_2)
+   //  .setFont(font_buttons)
+   //;
      
 ///////////////////////////////////
 //Set Temperature Sensor Boxes Up//
 ///////////////////////////////////
 
-   cp5.addNumberbox("Temp_Sensor_1")
-     .setPosition(375,70)
-     .setSize(120,30)
-     .setScrollSensitivity(1.1)
-     .setValue(temp_sensor_1)
-     .setFont(font_buttons)
-   ;
+   //cp5.addNumberbox("Temp_Sensor_1")
+   //  .setPosition(375,70)
+   //  .setSize(120,30)
+   //  .setScrollSensitivity(1.1)
+   //  .setValue(temp_sensor_1)
+   //  .setFont(font_buttons)
+   //;
    
-   cp5.addNumberbox("Temp_Sensor_2")
-     .setPosition(375,130)
-     .setSize(120,30)
-     .setScrollSensitivity(1.1)
-     .setValue(temp_sensor_2)
-     .setFont(font_buttons)
-   ;
+   //cp5.addNumberbox("Temp_Sensor_2")
+   //  .setPosition(375,130)
+   //  .setSize(120,30)
+   //  .setScrollSensitivity(1.1)
+   //  .setValue(temp_sensor_2)
+   //  .setFont(font_buttons)
+   //;
    
-   cp5.addNumberbox("Temp_Sensor_3")
-     .setPosition(375,190)
-     .setSize(120,30)
-     .setScrollSensitivity(1.1)
-     .setValue(temp_sensor_3)
-     .setFont(font_buttons)
-   ;
+   //cp5.addNumberbox("Temp_Sensor_3")
+   //  .setPosition(375,190)
+   //  .setSize(120,30)
+   //  .setScrollSensitivity(1.1)
+   //  .setValue(temp_sensor_3)
+   //  .setFont(font_buttons)
+   //;
   
 ///////////////////////////
 //Set Ball Valve Boxes Up//
@@ -210,6 +216,17 @@ void draw(){  //same as loop in arduino
   text("PR4",550,285);
   text("PR",550,335);
   text("OFF",550,350);
+  textFont(font_labels);
+  text("Flow Meter 1", 200, 100);
+  text(flow_meter_1, 200, 120);//, 540, 300);
+  text("Flow Meter 2", 200, 160);
+  text(flow_meter_2, 200, 180);
+  text("Temp Sensor 1", 375, 100);
+  text(temp_sensor_1, 375, 120);
+  text("Temp Sensor 2", 375, 160);
+  text(temp_sensor_2, 375, 180);
+  text("Temp Sensor 3", 375, 220);
+  text(temp_sensor_3, 375, 240);
  
  //Need to parse the toggle values to set up the message that we want to send to the Serial port
  //Need to have a lot of if statements looking at value of toggle value, and then have that set or reset a value
@@ -260,10 +277,47 @@ void draw(){  //same as loop in arduino
   old_byte_1 = byte_1;
   old_byte_2 = byte_2;
   
-  /*while (port.available() > 0) {
-    int inByte_2 = port.read();
-    println(inByte_2);
+  while (port.available() > 0) {
+    id_byte = port.read();
+    char byte_value =char(id_byte);
+    if (id_byte == 99) {
+      inByte_3 = port.read();
+      print("Got a c");
+      print(" - ");
+      println(inByte_3);
+      flow_meter_1 = str(inByte_3);
+    }
+    if (id_byte == 'd') {
+      inByte_4 = port.read();
+      print("Got a d");
+      print(" - ");
+      println(inByte_4);
+      flow_meter_2 = str(inByte_4);
+    }
+    if (id_byte == 'e') {
+      inByte_5 = port.read();
+      print("Got a e");
+      print(" - ");
+      println(inByte_5);
+      temp_sensor_1 = str(inByte_5);
+    }
+    if (id_byte == 'f') {
+      inByte_6 = port.read();
+      print("Got a f");
+      print(" - ");
+      println(inByte_6);
+      temp_sensor_2 = str(inByte_6);
+    }
+    if (id_byte == 'g') {
+      inByte_7 = port.read();
+      print("Got a g");
+      print(" - ");
+      println(inByte_7);
+      temp_sensor_3 = str(inByte_7);
+    }
   }
+    
+    /*
   while (port.available() > 0) {
     int inByte_3 = port.read();
     println(inByte_3);
@@ -281,7 +335,7 @@ void draw(){  //same as loop in arduino
     println(inByte_6);
   }*/
   
-  byte[] inBuffer = new byte[5];
+  /*byte[] inBuffer = new byte[6];
   while (port.available() > 0) {
     inBuffer = port.readBytes();
     port.readBytes(inBuffer);
@@ -289,7 +343,9 @@ void draw(){  //same as loop in arduino
       String myString = new String(inBuffer);
       println(myString);
     }
-  }
+  }*/
+  
+  //flow_meter_1 = 70;
 }
 
 //lets add some functions to our buttons

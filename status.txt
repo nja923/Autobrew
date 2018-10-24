@@ -15,5 +15,12 @@ Next steps.
 
 
 
-10/22/19 - N. Anderson
+10/22/18 - N. Anderson
 Updated arduino file to parse serial message from processing.  Arduino now transmits temp sensor and flow meter information to processing.  Updated the message breakdown file for new information.  Need to figure out how to read multiple sensors (they require time to read the scratchpad of the one wire devices), transmit the message, and still be able to monitor the serial port in case processing wants to send a message.
+
+10/23/18 - N. Anderson
+Updated arduino file to transmit serial messages to processing based on value of temp sensors and flow meters.  Verified functionality of single use of temp sensor and flow sensor.  Functionality verified.  Still need to figure out why the ball valve is not working correctly.  Need to connect to power supply directly.  Need to verify that the output of the power supplies is sufficient as well.  
+
+Updated processing file to parse arduino serial file.  Updated drawing to display sensors and sensor values. Verified output functionality being sent from arduino via serial.  Tested with flow sensor and temp sensor. 
+
+Should look into decreasing time for serial transmission.

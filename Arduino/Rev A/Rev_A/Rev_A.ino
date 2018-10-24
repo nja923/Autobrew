@@ -125,7 +125,8 @@ volatile int temp_flowrate_bp_const = 0;
 bool temp_mash_var = 0;
 const byte NUMBER_OF_STATES = 4; //how many states are we cycling through?
 boolean toggle = false;
-int inByte, message_1_byte, message_6_byte, message_7_byte, message_8_byte, message_2_byte, message_3_byte, message_4_byte, message_5_byte, message_bad_byte;
+boolean toggle_1 = false;
+unsigned char inByte, message_1_byte, message_6_byte, message_7_byte, message_8_byte, message_2_byte, message_3_byte, message_4_byte, message_5_byte, message_bad_byte;
 int relay_array[16];
 boolean MT_TS_Status = true;
 boolean BP_TS_Status = true;
@@ -407,41 +408,49 @@ ISR(TIMER1_COMPA_vect) //Interrupt routine that will happen every second.  We wa
   temp_flow_transmit_timer++;
   if(temp_flow_transmit_timer == 4) {
     Serial.print("c");
-    Serial.print(message_3_byte);
+    Serial.write(message_3_byte);
     Serial.print("d");
-    Serial.print(message_4_byte);
+    Serial.write(message_4_byte);
     Serial.print("e");
-    Serial.print(message_5_byte);
+    Serial.write(message_5_byte);
     Serial.print("f");
-    Serial.print(message_6_byte);
+    Serial.write(message_6_byte);
     Serial.print("g");
-    Serial.println(message_7_byte);
+    Serial.write(message_7_byte);
+    Serial.println("");
     temp_flow_transmit_timer = 0;
+    //digitalWrite(Relay_1, toggle_1);
+    //digitalWrite(Green_LED, toggle_1);
+    //toggle_1 = !toggle_1;
   }
-  
+
+  if(HLT_TS_Status) {
     ds_HLT.reset();
     ds_HLT.select(addr_HLT);
     ds_HLT.write(0x44,1); //Start conversion, with parasite power on at the end
-    
+  }
+  if(MT_TS_Status) {
     ds_MT.reset();
     ds_MT.select(addr_MT);
     ds_MT.write(0x44,1); //Start conversion, with parasite power on at the end
-
+  }
+  if(BP_TS_Status) {
     ds_BP.reset();
     ds_BP.select(addr_BP);
     ds_BP.write(0x44,1); //Start conversion, with parasite power on at the end 
-  
+  }
+  if(Ferm_TS_Status) {
     ds_Ferm.reset();
     ds_Ferm.select(addr_Ferm);
     ds_Ferm.write(0x44,1); //Start conversion, with parasite power on at the end 
-  
-  if(seconds_var == 60) //if we have 60 interrupt, that means we have 60 seconds.  We want to reset the seconds to 0 and increment our minuts variable
+  }
+  /*if(seconds_var == 60) //if we have 60 interrupt, that means we have 60 seconds.  We want to reset the seconds to 0 and increment our minuts variable
   {
     seconds_var = 0;
     minutes_var++;
     Serial.print(minutes_var);
     Serial.print(" minutes!\n");
-  }
+  }*/
 
   //Need to toggle an LED to ensure that the system is functioning properly
 }
@@ -478,7 +487,7 @@ SIGNAL(TIMER0_COMPA_vect) {
   uint8_t x_HLT = digitalRead(HLTOutputFlowSensor);
   uint8_t x_BP = digitalRead(BrewPotOutputFlowSensor);
 
-  if(currentstate == Transfer_To_MT_const) {
+  
     if (x_HLT == lastflowpinstate_HLT) {
       lastflowratetimer_HLT++;
       return; //nothing changed!
@@ -493,9 +502,9 @@ SIGNAL(TIMER0_COMPA_vect) {
     flowrate_HLT /= lastflowratetimer_HLT; // in hertz
     message_3_byte = flowrate_HLT;
     lastflowratetimer_HLT = 0;
-  }
-  if(currentstate == Wort_To_Fermenter_const) {
-    if (x_HLT == lastflowpinstate_BP) {
+  
+  /*
+    if (x_BP == lastflowpinstate_BP) {
       lastflowratetimer_BP++;
       return; //nothing changed!
     }
@@ -508,8 +517,8 @@ SIGNAL(TIMER0_COMPA_vect) {
     flowrate_BP = 1000.0;
     flowrate_BP /= lastflowratetimer_BP; // in hertz
     message_4_byte = flowrate_BP;
-    lastflowratetimer_BP = 0;
-  }
+    lastflowratetimer_BP = 0;*/
+  
 }
 
 void loop() {
@@ -635,17 +644,12 @@ void read_HLT_TS() {
     data_HLT[i] = ds_HLT.read();
   }
 
-  Serial.print("\nScratchpad Read\n");
-    
   int HighByte, LowByte, TReading;
 
   LowByte = data_HLT[0];
   HighByte = data_HLT[1];
   TReading = (HighByte<<8) + LowByte;
   HLTTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
-  Serial.print("HLT Temperature is: ");
-  Serial.print(HLTTempSensor);
-  Serial.print(" Degrees Fahrenheit!\n");
   message_5_byte = HLTTempSensor;
 }
 
