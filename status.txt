@@ -24,3 +24,6 @@ Updated arduino file to transmit serial messages to processing based on value of
 Updated processing file to parse arduino serial file.  Updated drawing to display sensors and sensor values. Verified output functionality being sent from arduino via serial.  Tested with flow sensor and temp sensor. 
 
 Should look into decreasing time for serial transmission.
+
+10/24/18 - N. Anderson
+Increased the serial transmission rate of the temp sensors and flow sensors.  Verified proper serial transmission of ball valve and pr information from processing to arduino.  removed all unneccesary serial transmission messages to prevent interfering with messages. Added folder for processing application to run on windows.  Final prototype build complete.  All subsystems seem to work as desired.  Next step is to start to lay everything out and start to integrate full functionality.

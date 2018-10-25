@@ -406,7 +406,7 @@ ISR(TIMER1_COMPA_vect) //Interrupt routine that will happen every second.  We wa
   digitalWrite(Red_LED, toggle);
   seconds_var++; //increment out seconds each time interrupt fires
   temp_flow_transmit_timer++;
-  if(temp_flow_transmit_timer == 4) {
+  if(temp_flow_transmit_timer == 1) {
     Serial.print("c");
     Serial.write(message_3_byte);
     Serial.print("d");
@@ -503,7 +503,7 @@ SIGNAL(TIMER0_COMPA_vect) {
     message_3_byte = flowrate_HLT;
     lastflowratetimer_HLT = 0;
   
-  /*
+  
     if (x_BP == lastflowpinstate_BP) {
       lastflowratetimer_BP++;
       return; //nothing changed!
@@ -517,7 +517,7 @@ SIGNAL(TIMER0_COMPA_vect) {
     flowrate_BP = 1000.0;
     flowrate_BP /= lastflowratetimer_BP; // in hertz
     message_4_byte = flowrate_BP;
-    lastflowratetimer_BP = 0;*/
+    lastflowratetimer_BP = 0;
   
 }
 
@@ -528,27 +528,29 @@ void loop() {
     //toggle = !toggle;
   if (Serial.available() > 0) {
     // get incoming byte:
+    //digitalWrite(Green_LED, LED_ON);
     inByte = Serial.read();
-    Serial.println(inByte);
+//    Serial.println(inByte);
     if (inByte == 'a') {
       message_1_byte = Serial.read();
-      Serial.print("Message byte 1 received - ");
-      Serial.println(message_1_byte);
+//      Serial.print("Message byte 1 received - ");
+//      Serial.println(message_1_byte);
+      //digitalWrite(Yellow_LED, LED_ON);
       message_1();
     }
     else if (inByte == 'b') {
       message_2_byte = Serial.read();
-      Serial.print("Message byte 2 received - ");
-      Serial.println(message_2_byte);
+//      Serial.print("Message byte 2 received - ");
+//      Serial.println(message_2_byte);
       message_2();
     }
     else {
       message_bad_byte = Serial.read();
       message_bad_byte = 64;
-      Serial.print("Invalid message received - ");
-      Serial.write(message_bad_byte);
+//      Serial.print("Invalid message received - ");
+//      Serial.write(message_bad_byte);
     }
-    Serial.println("");
+//    Serial.println("");
   }
 
   if(HLT_TS_Status) {read_HLT_TS();}
@@ -565,21 +567,29 @@ void loop() {
 void message_1() {
   for(int x=0;x<8;x++) {
     relay_array[x] = bitRead(message_1_byte, x);
-    Serial.print("Relay ");
-    Serial.print(x);
-    Serial.print(" is ");
-    Serial.println(relay_array[x]);
+//    Serial.print("Relay ");
+//    Serial.print(x);
+//    Serial.print(" is ");
+//    Serial.println(relay_array[x]);
   }
+  digitalWrite(Relay_1, relay_array[0]);
+  digitalWrite(Relay_2, relay_array[1]);
+  digitalWrite(Relay_3, relay_array[2]);
+  digitalWrite(Relay_4, relay_array[3]);
+  digitalWrite(Relay_5, relay_array[4]);
+  digitalWrite(Relay_6, relay_array[5]);
+  digitalWrite(Relay_7, relay_array[6]);
+  digitalWrite(Relay_8, relay_array[7]);
   return;
 }
 
 void message_2() {
   for(int x=8;x<16;x++) {
     relay_array[x] = bitRead(message_2_byte, (x-8));
-    Serial.print("Relay ");
-    Serial.print(x);
-    Serial.print(" is ");
-    Serial.println(relay_array[x]);
+//    Serial.print("Relay ");
+//    Serial.print(x);
+//    Serial.print(" is ");
+//    Serial.println(relay_array[x]);
   }
   return;
 }

@@ -29,7 +29,7 @@ int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte
 
 void setup(){ //same as arduino program
 
-  size(725, 700);    //window size, (width, height)
+  size(1600, 900);    //window size, (width, height)
   smooth();
   printArray(Serial.list());   //prints all available serial ports
   
@@ -264,14 +264,19 @@ void draw(){  //same as loop in arduino
  if(ALL_PR_OFF==true) {byte_2 &= ~(30);} //this will clear all the bits in position 9-11.
  else {}//transmit_message_1 |= 0 << 7; }
   
-  if ((byte_1 != old_byte_1) | (byte_2 != old_byte_2) ){
-    port.write('x');
-    println("Now Sending Byte 1 - ", byte_1);
+  if ((byte_1 != old_byte_1)) { //| (byte_2 != old_byte_2) ){
+    //port.write('x');
+    //println("Now Sending Byte 1 - ", byte_1);
+    port.write('a');
     port.write(Integer.toString(byte_1));
-    port.write("_");
-    println("Now Sending Byte 2 - ", byte_2);
-    port.write(Integer.toString(byte_2));
-    port.write('x');
+    //port.write("_");
+    //println("Now Sending Byte 2 - ", byte_2);
+    //port.write(Integer.toString(byte_2));
+    //port.write('x');
+  }
+  if (byte_2 != old_byte_2) {
+   port.write('b');
+   port.write(Integer.toString(byte_2));
   }
     
   old_byte_1 = byte_1;
@@ -289,9 +294,9 @@ void draw(){  //same as loop in arduino
     }
     if (id_byte == 'd') {
       inByte_4 = port.read();
-      print("Got a d");
-      print(" - ");
-      println(inByte_4);
+      //print("Got a d");
+      //print(" - ");
+      //println(inByte_4);
       flow_meter_2 = str(inByte_4);
     }
     if (id_byte == 'e') {
@@ -303,9 +308,9 @@ void draw(){  //same as loop in arduino
     }
     if (id_byte == 'f') {
       inByte_6 = port.read();
-      print("Got a f");
-      print(" - ");
-      println(inByte_6);
+      //print("Got a f");
+      //print(" - ");
+      //println(inByte_6);
       temp_sensor_2 = str(inByte_6);
     }
     if (id_byte == 'g') {
