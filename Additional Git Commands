@@ -1,0 +1,11 @@
+http://git-scm.com/download/win
+
+git config --global user.name 'nja923'
+git config --global user.email 'nja923@gmail.com'
+
+git add -add a file to the staging area
+git add . - adds all uncommited files to staging area
+git status -check status of staging area
+git rm --cached "file to remove" --removes a file from the staging area
+
+:wq gets us out of the weird hang up
