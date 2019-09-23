@@ -27,3 +27,6 @@ Should look into decreasing time for serial transmission.
 
 10/24/18 - N. Anderson
 Increased the serial transmission rate of the temp sensors and flow sensors.  Verified proper serial transmission of ball valve and pr information from processing to arduino.  removed all unneccesary serial transmission messages to prevent interfering with messages. Added folder for processing application to run on windows.  Final prototype build complete.  All subsystems seem to work as desired.  Next step is to start to lay everything out and start to integrate full functionality.
+
+9/23/19 - N. Anderson
+Verified that flow sensors and temp sensors all work on board.  Values are properly sent to processor for display.  Verified that processor inputs create messages and send serially to arduino.  Verified that arduino gets messages, but having issues parsing through message properly.  For some reason, relay 1 comes one when it's not suppose to.  Need to add level switches to the processor page.  Also need to integrate level switches into arduino sketch to make sure that ball valves that control input can't run if the level switches are triggered.
