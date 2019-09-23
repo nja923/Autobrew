@@ -29,11 +29,11 @@ int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte
 
 void setup(){ //same as arduino program
 
-  size(1600, 900);    //window size, (width, height)
+  size(800, 900);    //window size, (width, height)
   smooth();
   printArray(Serial.list());   //prints all available serial ports
   
-  port = new Serial(this, "COM3", 115200);  //i have connected arduino to com3, it would be different in linux and mac os
+  port = new Serial(this, "COM17", 115200);  //i have connected arduino to com3, it would be different in linux and mac os
   
   //lets add buton to empty window
   
@@ -247,22 +247,24 @@ void draw(){  //same as loop in arduino
  else {byte_1 &= ~(1 << 6); }
  if(BV8==true) {byte_1 |= 1 << 7;}
  else {byte_1 &= ~(1 << 7); }
- if(BV9==true) {byte_2 |= 1 << 0;}
- else {byte_2 &= ~(1 << 0); }
+ //if(BV9==true) {byte_2 |= 1 << 0;}
+ //else {byte_2 &= ~(1 << 0); }
  if(BV_ALL_OFF==true) {byte_1 &= ~(255);
-   byte_2 &= ~(1 << 0);
+   //byte_2 &= ~(1 << 0);
  }  //this will clear all the bits in position 0-8.  Equates to 511 decimal
  else {}//transmit_message_1 |= 0 << 7; }
- if(PR1==true) {byte_2 |= 1 << 1;}
+ if(PR1==true) {byte_2 |= 1 << 0;}
+ else {byte_2 &= ~(1 << 0); }
+ if(PR2==true) {byte_2 |= 1 << 1;}
  else {byte_2 &= ~(1 << 1); }
- if(PR2==true) {byte_2 |= 1 << 2;}
+ if(PR3==true) {byte_2 |= 1 << 2;}
  else {byte_2 &= ~(1 << 2); }
- if(PR3==true) {byte_2 |= 1 << 3;}
+ if(PR4==true) {byte_2 |= 1 << 3;}
  else {byte_2 &= ~(1 << 3); }
- if(PR4==true) {byte_2 |= 1 << 4;}
- else {byte_2 &= ~(1 << 4); }
- if(ALL_PR_OFF==true) {byte_2 &= ~(30);} //this will clear all the bits in position 9-11.
+ if(ALL_PR_OFF==true) {byte_2 &= ~(255);} //this will clear all the bits in position 9-11.
  else {}//transmit_message_1 |= 0 << 7; }
+ print("message 2 is ");
+      println(byte_2);
   
   if ((byte_1 != old_byte_1)) { //| (byte_2 != old_byte_2) ){
     //port.write('x');
