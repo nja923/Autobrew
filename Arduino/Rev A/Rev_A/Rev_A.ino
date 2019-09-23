@@ -152,6 +152,9 @@ volatile float flowrate_HLT, flowrate_BP;
   byte data_HLT[12], data_MT[12], data_BP[12], data_Ferm[12];
   byte addr[8], addr_HLT[8], addr_MT[8], addr_BP[8], addr_Ferm[8];
 
+//Variables for level switches
+  byte hlt_level_switch_var, brewpot_level_switch_var;
+
 void ChillOut();
 void FillHLT();
 void HeatHLT();
@@ -465,11 +468,11 @@ ISR(TIMER1_COMPA_vect) //Interrupt routine that will happen every second.  We wa
     ds_BP.select(addr_BP);
     ds_BP.write(0x44,1); //Start conversion, with parasite power on at the end 
   }
-  if(Ferm_TS_Status) {
-    ds_Ferm.reset();
-    ds_Ferm.select(addr_Ferm);
-    ds_Ferm.write(0x44,1); //Start conversion, with parasite power on at the end 
-  }
+//  if(Ferm_TS_Status) {
+//    ds_Ferm.reset();
+//    ds_Ferm.select(addr_Ferm);
+//    ds_Ferm.write(0x44,1); //Start conversion, with parasite power on at the end 
+//  }
   /*if(seconds_var == 60) //if we have 60 interrupt, that means we have 60 seconds.  We want to reset the seconds to 0 and increment our minuts variable
   {
     seconds_var = 0;
@@ -594,8 +597,8 @@ void loop() {
   delay(1000);
   if(BP_TS_Status) {read_BP_TS();}
   delay(1000);
-  if(Ferm_TS_Status)  {read_Ferm_TS();}
-  delay(1000);
+//  if(Ferm_TS_Status)  {read_Ferm_TS();}
+//  delay(1000);
   
 }
 
@@ -607,14 +610,23 @@ void message_1() {
 //    Serial.print(" is ");
 //    Serial.println(relay_array[x]);
   }
-  digitalWrite(Relay_1, relay_array[0]);
-  digitalWrite(Relay_2, relay_array[1]);
-  digitalWrite(Relay_3, relay_array[2]);
-  digitalWrite(Relay_4, relay_array[3]);
-  digitalWrite(Relay_5, relay_array[4]);
-  digitalWrite(Relay_6, relay_array[5]);
-  digitalWrite(Relay_7, relay_array[6]);
-  digitalWrite(Relay_8, relay_array[7]);
+//  if(!digitalRead(HLT_Level_Switch)) {digitalWrite(Relay_1, relay_array[0]);
+//  }
+//  else {digitalWrite(Relay_1, RELAY_OFF);
+//  }
+//  digitalWrite(Relay_2, relay_array[1]);
+//  digitalWrite(Relay_3, relay_array[2]);
+//  digitalWrite(Relay_4, relay_array[3]);
+//  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_5, relay_array[4]);
+//  }
+//  else {digitalWrite(Relay_5, RELAY_OFF);
+//  }
+//  digitalWrite(Relay_6, relay_array[5]);
+//  digitalWrite(Relay_7, relay_array[6]);
+//  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_8, relay_array[7]);
+//  }
+//  else {digitalWrite(Relay_8, RELAY_OFF);
+//  }
   return;
 }
 
@@ -626,12 +638,8 @@ void message_2() {
 //    Serial.print(" is ");
 //    Serial.println(relay_array[x]);
   //}
-  if(message_2_byte == 1  && message_2_byte == 3 && message_2_byte == ) {digitalWrite(HLT_Heater_Relay, RELAY_ON);}
-  else
-  if(message_2_byte == 1) {digitalWrite(BrewPot_Heater_Relay, relay_array[1]);
-  digitalWrite(Fermenter_Control_Relay, relay_array[2]);
-  digitalWrite(Pump_Relay, relay_array[3]);
-  
+//  if(message_2_byte == 1  && message_2_byte == 3 && message_2_byte == 5 && message_2_byte == 7  && message_2_byte == 9 && message_2_byte == 11) {digitalWrite(HLT_Heater_Relay, RELAY_ON);}
+//  else digitalWrite(HLT_Heater_Relay, RELAY_ON);
   digitalWrite(HLT_Heater_Relay, relay_array[0]);
   digitalWrite(BrewPot_Heater_Relay, relay_array[1]);
   digitalWrite(Fermenter_Control_Relay, relay_array[2]);
@@ -755,25 +763,24 @@ void read_BP_TS() {
   message_7_byte = BrewPotTempSensor;
 }
 
-void read_Ferm_TS() {
-  int HighByte, LowByte, TReading, drink_var;
-  
-  //Start to grab the Mash Tun Temperature
-  int present = ds_Ferm.reset();
-  ds_Ferm.select(addr_Ferm);    
-  ds_Ferm.write(0xBE);         // Read Scratchpad
-
-  for ( int i = 0; i < 9; i++) {           // we need 9 bytes
-    data_Ferm[i] = ds_Ferm.read();
-  }
-
-  LowByte = data_Ferm[0];
-  HighByte = data_Ferm[1];
-  TReading = (HighByte<<8) + LowByte;
-  FermenterTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
-  //Serial.print("\nFermenter Temperature is: ");
-  //Serial.print(FermenterTempSensor);
-  //Serial.print(" Degrees Fahrenheit!\n");
-  message_8_byte = FermenterTempSensor;
-}
-
+//void read_Ferm_TS() {
+//  int HighByte, LowByte, TReading, drink_var;
+//  
+//  //Start to grab the Mash Tun Temperature
+//  int present = ds_Ferm.reset();
+//  ds_Ferm.select(addr_Ferm);    
+//  ds_Ferm.write(0xBE);         // Read Scratchpad
+//
+//  for ( int i = 0; i < 9; i++) {           // we need 9 bytes
+//    data_Ferm[i] = ds_Ferm.read();
+//  }
+//
+//  LowByte = data_Ferm[0];
+//  HighByte = data_Ferm[1];
+//  TReading = (HighByte<<8) + LowByte;
+//  FermenterTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
+//  //Serial.print("\nFermenter Temperature is: ");
+//  //Serial.print(FermenterTempSensor);
+//  //Serial.print(" Degrees Fahrenheit!\n");
+//  message_8_byte = FermenterTempSensor;
+//}
