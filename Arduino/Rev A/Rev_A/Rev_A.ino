@@ -133,6 +133,9 @@ boolean BP_TS_Status = true;
 boolean HLT_TS_Status = true;
 boolean Ferm_TS_Status = true;
 
+boolean LS1 = false;
+boolean LS2 = false;
+
 int temp_count = 0;  //temporary counter for use wherever needed.
 
 #define PitchYeastTemp  75
@@ -426,6 +429,8 @@ ISR(TIMER1_COMPA_vect) //Interrupt routine that will happen every second.  We wa
     Serial.write(message_6_byte);   //Mash Tun Temp Sensor
     Serial.print("g");
     Serial.write(message_7_byte);   //Brewpot Temp Sensor
+    Serial.print("h");
+    Serial.write(message_8_byte);   //Level Switch Status'
     //Serial.print("Temp - ");
     //Serial.print(flowrate_HLT);
 
@@ -599,7 +604,12 @@ void loop() {
   delay(1000);
 //  if(Ferm_TS_Status)  {read_Ferm_TS();}
 //  delay(1000);
-  
+  LS1 = digitalRead(HLT_Level_Switch);
+  LS2 = digitalRead(BrewPotLevelSwitch);
+  if(LS1 && LS2)  {message_8_byte = 3;}
+  else if(LS2)    {message_8_byte = 2;} 
+  else if(LS1)    {message_8_byte = 1;}
+  else            {message_8_byte = 0;}
 }
 
 void message_1() {
@@ -610,23 +620,23 @@ void message_1() {
 //    Serial.print(" is ");
 //    Serial.println(relay_array[x]);
   }
-//  if(!digitalRead(HLT_Level_Switch)) {digitalWrite(Relay_1, relay_array[0]);
-//  }
-//  else {digitalWrite(Relay_1, RELAY_OFF);
-//  }
-//  digitalWrite(Relay_2, relay_array[1]);
-//  digitalWrite(Relay_3, relay_array[2]);
-//  digitalWrite(Relay_4, relay_array[3]);
-//  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_5, relay_array[4]);
-//  }
-//  else {digitalWrite(Relay_5, RELAY_OFF);
-//  }
-//  digitalWrite(Relay_6, relay_array[5]);
-//  digitalWrite(Relay_7, relay_array[6]);
-//  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_8, relay_array[7]);
-//  }
-//  else {digitalWrite(Relay_8, RELAY_OFF);
-//  }
+  if(!digitalRead(HLT_Level_Switch)) {digitalWrite(Relay_1, relay_array[0]);
+  }
+  else {digitalWrite(Relay_1, RELAY_OFF);
+  }
+  digitalWrite(Relay_2, relay_array[1]);
+  digitalWrite(Relay_3, relay_array[2]);
+  digitalWrite(Relay_4, relay_array[3]);
+  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_5, relay_array[4]);
+  }
+  else {digitalWrite(Relay_5, RELAY_OFF);
+  }
+  digitalWrite(Relay_6, relay_array[5]);
+  digitalWrite(Relay_7, relay_array[6]);
+  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_8, relay_array[7]);
+  }
+  else {digitalWrite(Relay_8, RELAY_OFF);
+  }
   return;
 }
 

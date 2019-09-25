@@ -14,6 +14,8 @@ String flow_meter_2 = "55";
 String temp_sensor_1 = "55";
 String temp_sensor_2 = "55";
 String temp_sensor_3= "55";
+String level_switch_1 = "OFF";
+String level_switch_2 = "OFF";
 boolean BV1, BV2, BV3, BV4, BV5, BV6, BV7, BV8, BV9, BV10, PR1, PR2, PR3, PR4, ALL_PR_OFF, BV_ALL_OFF;
 boolean ball_valve_1_status;
 boolean ball_valve_2_status;
@@ -24,7 +26,9 @@ boolean ball_valve_6_status;
 boolean ball_valve_7_status;
 boolean ball_valve_8_status;
 boolean ball_valve_9_status;
-int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte_6, id_byte, inByte_7;
+boolean level_switch_1_status;
+boolean level_switch_2_status;
+int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte_6, id_byte, inByte_7, inByte_8;
 
 
 void setup(){ //same as arduino program
@@ -33,7 +37,7 @@ void setup(){ //same as arduino program
   smooth();
   printArray(Serial.list());   //prints all available serial ports
   
-  port = new Serial(this, "COM17", 115200);  //i have connected arduino to com3, it would be different in linux and mac os
+  port = new Serial(this, "COM1", 115200);  //i have connected arduino to com3, it would be different in linux and mac os
   
   //lets add buton to empty window
   
@@ -182,6 +186,8 @@ void setup(){ //same as arduino program
     .setSize(75,button_y_size)
     .setFont(font_0)
     ;
+    
+
    
 }
 
@@ -227,6 +233,10 @@ void draw(){  //same as loop in arduino
   text(temp_sensor_2, 375, 180);
   text("Temp Sensor 3", 375, 220);
   text(temp_sensor_3, 375, 240);
+  text("Level Switch 1", 375, 320);
+  text(level_switch_1, 375, 340);
+  text("Level Switch 2", 375, 380);
+  text(level_switch_1, 375, 400);
  
  //Need to parse the toggle values to set up the message that we want to send to the Serial port
  //Need to have a lot of if statements looking at value of toggle value, and then have that set or reset a value
@@ -321,6 +331,26 @@ void draw(){  //same as loop in arduino
       print(" - ");
       println(inByte_7);
       temp_sensor_3 = str(inByte_7);
+    }
+    if (id_byte == 'h') {
+      inByte_8 = port.read();
+      print("Got a h");
+      print(" - ");
+      println(inByte_8);
+      switch (inByte_8) {
+         case 0: 
+           level_switch_1 = "OFF";
+           level_switch_2 = "OFF";
+         case 1: 
+           level_switch_1 = "ON";
+           level_switch_2 = "OFF";
+         case 2: 
+           level_switch_1 = "OFF";
+           level_switch_2 = "ON";
+         case 3: 
+           level_switch_1 = "ON";
+           level_switch_2 = "ON";         
+      }
     }
   }
     
