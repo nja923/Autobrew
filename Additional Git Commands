@@ -9,3 +9,5 @@ git status -check status of staging area
 git rm --cached "file to remove" --removes a file from the staging area
 
 :wq gets us out of the weird hang up
+
+git config credential.helper store  - this should store username and password on local machine, so we could make a script that just pulls periodically.
