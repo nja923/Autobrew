@@ -127,11 +127,20 @@ const byte NUMBER_OF_STATES = 4; //how many states are we cycling through?
 boolean toggle = false;
 boolean toggle_1 = false;
 unsigned char inByte, message_1_byte, message_6_byte, message_7_byte, message_8_byte, message_2_byte, message_3_byte, message_4_byte, message_5_byte, message_bad_byte;
+unsigned char message_9_byte, message_10_byte;
 int relay_array[16];
 boolean MT_TS_Status = true;
 boolean BP_TS_Status = true;
 boolean HLT_TS_Status = true;
 boolean Ferm_TS_Status = true;
+
+int HLT_Temp_Setpoint = 170;
+int BP_Temp_Setpoint = 210;
+
+boolean LS1 = false;
+boolean LS2 = false;
+
+int temp_count = 0;  //temporary counter for use wherever needed.
 
 #define PitchYeastTemp  75
 
@@ -150,6 +159,9 @@ volatile float flowrate_HLT, flowrate_BP;
   byte data_HLT[12], data_MT[12], data_BP[12], data_Ferm[12];
   byte addr[8], addr_HLT[8], addr_MT[8], addr_BP[8], addr_Ferm[8];
 
+//Variables for level switches
+  byte hlt_level_switch_var, brewpot_level_switch_var;
+
 void ChillOut();
 void FillHLT();
 void HeatHLT();
@@ -162,6 +174,8 @@ void WortToFermenter();
 void Fermenting();
 void message_1();
 void message_2();
+void message_9();
+void message_10();
 void read_HLT_TS();
 void read_MT_TS();
 void read_BP_TS();
@@ -294,6 +308,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
     temp_sensor_var++;
   }
 
+  
   Serial.print("Setting up Mash Tun Temp Sensor\n");
 
   ds_MT.reset_search();
@@ -344,7 +359,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
     temp_sensor_var++;
   }
 
-  Serial.print("Setting up Fermenter Temp Sensor\n");
+  /*Serial.print("Setting up Fermenter Temp Sensor\n");
 
   ds_Ferm.reset_search();
   if(!ds_Ferm.search(addr)){
@@ -368,8 +383,8 @@ void setup()   /****** SETUP: RUNS ONCE ******/
     Ferm_TS_Status = false;
     temp_sensor_var++;
   }
-
-  if(temp_sensor_var == 0){digitalWrite(Green_LED, LED_ON);}
+*/
+  //if(temp_sensor_var == 0){digitalWrite(Green_LED, LED_ON);}
   
   // initialize timer1 
   noInterrupts();           // disable all interrupts
@@ -407,24 +422,49 @@ ISR(TIMER1_COMPA_vect) //Interrupt routine that will happen every second.  We wa
   seconds_var++; //increment out seconds each time interrupt fires
   temp_flow_transmit_timer++;
   if(temp_flow_transmit_timer == 1) {
-    Serial.print("c");
-    Serial.write(message_3_byte);
+
+    //Run this when we want to transmit information to Processing
+    Serial.print(temp_count);
+    Serial.print(" - c");
+    Serial.write(message_3_byte);  //hlt flow rate
     Serial.print("d");
-    Serial.write(message_4_byte);
+    Serial.write(message_4_byte);   //brewpot flow rate
     Serial.print("e");
-    Serial.write(message_5_byte);
+    Serial.write(message_5_byte);   //HLT temp sensor
     Serial.print("f");
-    Serial.write(message_6_byte);
+    Serial.write(message_6_byte);   //Mash Tun Temp Sensor
     Serial.print("g");
-    Serial.write(message_7_byte);
+    Serial.write(message_7_byte);   //Brewpot Temp Sensor
+    Serial.print("h");
+    Serial.write(message_8_byte);   //Level Switch Status'
+    //Serial.print("Temp - ");
+    //Serial.print(flowrate_HLT);
+
+    /*//Run this when we want detailed info in Arduino Serial Monitor
+    Serial.print(temp_count);
+    Serial.print(" - HLT Flow Rate - ");
+    Serial.print(message_3_byte); 
+    Serial.print(" , Brewpot Flow Rate - ");
+    Serial.print(message_4_byte);
+    Serial.print(" , HLT Temp Sensor - ");
+    Serial.print(message_5_byte);
+    Serial.print(" , Mash Tun Temp Sensor - ");
+    Serial.print(message_6_byte);
+    Serial.print(" , Brewpot Temp Sensor - ");
+    Serial.print(message_7_byte);
+*/
+
+    message_3_byte = message_4_byte = 0;
     Serial.println("");
     temp_flow_transmit_timer = 0;
+    //temp_count++;
     //digitalWrite(Relay_1, toggle_1);
     //digitalWrite(Green_LED, toggle_1);
     //toggle_1 = !toggle_1;
   }
 
   if(HLT_TS_Status) {
+    temp_count++;
     ds_HLT.reset();
     ds_HLT.select(addr_HLT);
     ds_HLT.write(0x44,1); //Start conversion, with parasite power on at the end
@@ -439,11 +479,11 @@ ISR(TIMER1_COMPA_vect) //Interrupt routine that will happen every second.  We wa
     ds_BP.select(addr_BP);
     ds_BP.write(0x44,1); //Start conversion, with parasite power on at the end 
   }
-  if(Ferm_TS_Status) {
-    ds_Ferm.reset();
-    ds_Ferm.select(addr_Ferm);
-    ds_Ferm.write(0x44,1); //Start conversion, with parasite power on at the end 
-  }
+//  if(Ferm_TS_Status) {
+//    ds_Ferm.reset();
+//    ds_Ferm.select(addr_Ferm);
+//    ds_Ferm.write(0x44,1); //Start conversion, with parasite power on at the end 
+//  }
   /*if(seconds_var == 60) //if we have 60 interrupt, that means we have 60 seconds.  We want to reset the seconds to 0 and increment our minuts variable
   {
     seconds_var = 0;
@@ -487,37 +527,46 @@ SIGNAL(TIMER0_COMPA_vect) {
   uint8_t x_HLT = digitalRead(HLTOutputFlowSensor);
   uint8_t x_BP = digitalRead(BrewPotOutputFlowSensor);
 
+  //message_3_byte = message_4_byte = 0;
+
   
     if (x_HLT == lastflowpinstate_HLT) {
       lastflowratetimer_HLT++;
-      return; //nothing changed!
+      //return; //nothing changed!
     }
+    else{
 
-    if (x_HLT == HIGH) {
-      //low to high transition!
-      pulses_HLT++;
+      if (x_HLT == HIGH) {
+        //low to high transition!
+        pulses_HLT++;
+      }
+      lastflowpinstate_HLT = x_HLT;
+      flowrate_HLT = 1000.0;
+      flowrate_HLT /= lastflowratetimer_HLT; // in hertz
+      message_3_byte = flowrate_HLT;
+      lastflowratetimer_HLT = 0;
+      flowrate_HLT = 0;
     }
-    lastflowpinstate_HLT = x_HLT;
-    flowrate_HLT = 1000.0;
-    flowrate_HLT /= lastflowratetimer_HLT; // in hertz
-    message_3_byte = flowrate_HLT;
-    lastflowratetimer_HLT = 0;
   
   
     if (x_BP == lastflowpinstate_BP) {
       lastflowratetimer_BP++;
-      return; //nothing changed!
+      //return; //nothing changed!
     }
+    else {
 
-    if (x_BP == HIGH) {
-      //low to high transition!
-      pulses_BP++;
+      if (x_BP == HIGH) {
+        //low to high transition!
+        pulses_BP++;
+        
+      }
+      lastflowpinstate_BP = x_BP;
+      flowrate_BP = 1000.0;
+      flowrate_BP /= lastflowratetimer_BP; // in hertz
+      message_4_byte = flowrate_BP;
+      lastflowratetimer_BP = 0;
+      flowrate_BP = 0;
     }
-    lastflowpinstate_BP = x_BP;
-    flowrate_BP = 1000.0;
-    flowrate_BP /= lastflowratetimer_BP; // in hertz
-    message_4_byte = flowrate_BP;
-    lastflowratetimer_BP = 0;
   
 }
 
@@ -528,29 +577,29 @@ void loop() {
     //toggle = !toggle;
   if (Serial.available() > 0) {
     // get incoming byte:
-    //digitalWrite(Green_LED, LED_ON);
     inByte = Serial.read();
 //    Serial.println(inByte);
     if (inByte == 'a') {
       message_1_byte = Serial.read();
-//      Serial.print("Message byte 1 received - ");
-//      Serial.println(message_1_byte);
-      //digitalWrite(Yellow_LED, LED_ON);
       message_1();
     }
     else if (inByte == 'b') {
       message_2_byte = Serial.read();
-//      Serial.print("Message byte 2 received - ");
-//      Serial.println(message_2_byte);
       message_2();
+    }
+    else if (inByte == 'l') {
+      message_9_byte = Serial.read();
+      message_9();
+      
+    }
+    else if (inByte == 'm') {
+      message_10_byte = Serial.read();
+      message_10();
     }
     else {
       message_bad_byte = Serial.read();
       message_bad_byte = 64;
-//      Serial.print("Invalid message received - ");
-//      Serial.write(message_bad_byte);
     }
-//    Serial.println("");
   }
 
   if(HLT_TS_Status) {read_HLT_TS();}
@@ -559,9 +608,18 @@ void loop() {
   delay(1000);
   if(BP_TS_Status) {read_BP_TS();}
   delay(1000);
-  if(Ferm_TS_Status)  {read_Ferm_TS();}
-  delay(1000);
-  
+//  if(Ferm_TS_Status)  {read_Ferm_TS();}
+//  delay(1000);
+  LS1 = !digitalRead(HLT_Level_Switch);
+  LS2 = !digitalRead(BrewPotLevelSwitch);
+  if(LS2) {digitalWrite(Green_LED, LED_ON);}
+  else {digitalWrite(Green_LED, LED_OFF);}
+   if(LS1) {digitalWrite(Yellow_LED, LED_ON);}
+  else {digitalWrite(Yellow_LED, LED_OFF);}
+  if(LS1 && LS2)  {message_8_byte = 3;}
+  else if(LS2)    {message_8_byte = 2;} 
+  else if(LS1)    {message_8_byte = 1;}
+  else            {message_8_byte = 0;}
 }
 
 void message_1() {
@@ -572,26 +630,64 @@ void message_1() {
 //    Serial.print(" is ");
 //    Serial.println(relay_array[x]);
   }
-  digitalWrite(Relay_1, relay_array[0]);
+  if(!digitalRead(HLT_Level_Switch)) {digitalWrite(Relay_1, relay_array[0]);
+  }
+  else {digitalWrite(Relay_1, RELAY_OFF);
+  }
   digitalWrite(Relay_2, relay_array[1]);
   digitalWrite(Relay_3, relay_array[2]);
   digitalWrite(Relay_4, relay_array[3]);
-  digitalWrite(Relay_5, relay_array[4]);
+  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_5, relay_array[4]);
+  }
+  else {digitalWrite(Relay_5, RELAY_OFF);
+  }
   digitalWrite(Relay_6, relay_array[5]);
   digitalWrite(Relay_7, relay_array[6]);
-  digitalWrite(Relay_8, relay_array[7]);
+  if(!digitalRead(BrewPotLevelSwitch)) {digitalWrite(Relay_8, relay_array[7]);
+  }
+  else {digitalWrite(Relay_8, RELAY_OFF);
+  }
   return;
 }
 
 void message_2() {
-  for(int x=8;x<16;x++) {
-    relay_array[x] = bitRead(message_2_byte, (x-8));
+  for(int x=0;x<8;x++) {
+  relay_array[x] = bitRead(message_2_byte, x);
 //    Serial.print("Relay ");
 //    Serial.print(x);
 //    Serial.print(" is ");
 //    Serial.println(relay_array[x]);
   }
+//  if(message_2_byte == 1  && message_2_byte == 3 && message_2_byte == 5 && message_2_byte == 7  && message_2_byte == 9 && message_2_byte == 11) {digitalWrite(HLT_Heater_Relay, RELAY_ON);}
+//  else digitalWrite(HLT_Heater_Relay, RELAY_ON);
+  if(HLTTempSensor < HLT_Temp_Setpoint) {
+  digitalWrite(HLT_Heater_Relay, relay_array[0]);
+  }
+  else {
+    digitalWrite(HLT_Heater_Relay, RELAY_OFF);
+  }
+  if(BrewPotTempSensor < BP_Temp_Setpoint) {
+  digitalWrite(BrewPot_Heater_Relay, relay_array[1]);
+  }
+  else {
+    digitalWrite(BrewPot_Heater_Relay, RELAY_OFF);
+  }
+  
+  digitalWrite(Fermenter_Control_Relay, relay_array[2]);
+  digitalWrite(Pump_Relay, relay_array[3]);
   return;
+}
+
+void message_9() {
+  HLT_Temp_Setpoint = message_9_byte;
+  if(HLT_Temp_Setpoint = 150) {
+    digitalWrite(Purple_LED, LED_ON);
+  }
+  else {digitalWrite(Purple_LED, LED_OFF);}
+}
+
+void message_10() {
+  BP_Temp_Setpoint = message_10_byte;
 }
 
 void show_response() {
@@ -676,15 +772,15 @@ void read_MT_TS(){
     data_MT[i] = ds_MT.read();
   }
 
-  Serial.print("\nScratchpad Read\n");
+  //Serial.print("\nScratchpad Read\n");
 
   LowByte = data_MT[0];
   HighByte = data_MT[1];
   TReading = (HighByte<<8) + LowByte;
   MashTunTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
-  Serial.print("Mash Temperature is: ");
-  Serial.print(MashTunTempSensor);
-  Serial.print(" Degrees Fahrenheit!\n");
+  //Serial.print("Mash Temperature is: ");
+  //Serial.print(MashTunTempSensor);
+  //Serial.print(" Degrees Fahrenheit!\n");
   message_6_byte = MashTunTempSensor;
 }
 
@@ -704,31 +800,30 @@ void read_BP_TS() {
   HighByte = data_BP[1];
   TReading = (HighByte<<8) + LowByte;
   BrewPotTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
-  Serial.print("Brew Pot Temperature is: ");
-  Serial.print(BrewPotTempSensor);
-  Serial.print(" Degrees Fahrenheit!\n");
+  //Serial.print("Brew Pot Temperature is: ");
+  //Serial.print(BrewPotTempSensor);
+  //Serial.print(" Degrees Fahrenheit!\n");
   message_7_byte = BrewPotTempSensor;
 }
 
-void read_Ferm_TS() {
-  int HighByte, LowByte, TReading, drink_var;
-  
-  //Start to grab the Mash Tun Temperature
-  int present = ds_Ferm.reset();
-  ds_Ferm.select(addr_Ferm);    
-  ds_Ferm.write(0xBE);         // Read Scratchpad
-
-  for ( int i = 0; i < 9; i++) {           // we need 9 bytes
-    data_Ferm[i] = ds_Ferm.read();
-  }
-
-  LowByte = data_Ferm[0];
-  HighByte = data_Ferm[1];
-  TReading = (HighByte<<8) + LowByte;
-  FermenterTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
-  Serial.print("\nFermenter Temperature is: ");
-  Serial.print(FermenterTempSensor);
-  Serial.print(" Degrees Fahrenheit!\n");
-  message_8_byte = FermenterTempSensor;
-}
-
+//void read_Ferm_TS() {
+//  int HighByte, LowByte, TReading, drink_var;
+//  
+//  //Start to grab the Mash Tun Temperature
+//  int present = ds_Ferm.reset();
+//  ds_Ferm.select(addr_Ferm);    
+//  ds_Ferm.write(0xBE);         // Read Scratchpad
+//
+//  for ( int i = 0; i < 9; i++) {           // we need 9 bytes
+//    data_Ferm[i] = ds_Ferm.read();
+//  }
+//
+//  LowByte = data_Ferm[0];
+//  HighByte = data_Ferm[1];
+//  TReading = (HighByte<<8) + LowByte;
+//  FermenterTempSensor = (((6*TReading) + TReading/4)/100)*(9/4) + 32;
+//  //Serial.print("\nFermenter Temperature is: ");
+//  //Serial.print(FermenterTempSensor);
+//  //Serial.print(" Degrees Fahrenheit!\n");
+//  message_8_byte = FermenterTempSensor;
+//}
