@@ -127,7 +127,7 @@ const byte NUMBER_OF_STATES = 4; //how many states are we cycling through?
 boolean toggle = false;
 boolean toggle_1 = false;
 unsigned char inByte, message_1_byte, message_6_byte, message_7_byte, message_8_byte, message_2_byte, message_3_byte, message_4_byte, message_5_byte, message_bad_byte;
-unsigned char message_9_byte, message_10_byte;
+unsigned int message_9_byte, message_10_byte;
 int relay_array[16];
 boolean MT_TS_Status = true;
 boolean BP_TS_Status = true;
