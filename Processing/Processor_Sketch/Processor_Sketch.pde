@@ -27,9 +27,14 @@ boolean ball_valve_7_status;
 boolean ball_valve_8_status;
 boolean ball_valve_9_status;
 boolean level_switch_1_status;
-boolean level_switch_2_status;
-int byte_1, byte_2, old_byte_1, old_byte_2, inByte_3, inByte_4, inByte_5, inByte_6, id_byte, inByte_7, inByte_8;
-
+boolean level_switch_2_status; 
+boolean HLT_Temp_Up;
+boolean HLT_Temp_Down;
+boolean BP_Temp_Up;
+boolean BP_Temp_Down;
+int byte_1, byte_2, byte_3, byte_4, old_byte_1, old_byte_2, old_byte_3, old_byte_4, inByte_3, inByte_4, inByte_5, inByte_6, id_byte, inByte_7, inByte_8;
+int HLT_Temp_Setpoint = 130;
+int BP_Temp_Setpoint = 210;
 
 void setup(){ //same as arduino program
 
@@ -37,7 +42,7 @@ void setup(){ //same as arduino program
   smooth();
   printArray(Serial.list());   //prints all available serial ports
   
-  port = new Serial(this, "COM1", 115200);  //i have connected arduino to com3, it would be different in linux and mac os
+  port = new Serial(this, "COM14", 115200);  //i have connected arduino to com3, it would be different in linux and mac os
   
   //lets add buton to empty window
   
@@ -186,6 +191,31 @@ void setup(){ //same as arduino program
     .setSize(75,button_y_size)
     .setFont(font_0)
     ;
+    //Add button to increase or decrease temp setpoint for HLT up
+    cp5.addToggle("HLT_Temp_Up")
+    .setPosition(240, 320)
+    .setSize(25,25)
+    .setFont(font_0)
+    ;
+    //Add button to increase or decrease temp setpoint for HLT down
+    cp5.addToggle("HLT_Temp_Down")
+    .setPosition(270, 320)
+    .setSize(25,25)
+    .setFont(font_0)
+    ;
+    //Add button to increase or decrease temp setpoint for BP up
+    cp5.addToggle("BP_Temp_Up")
+    .setPosition(240, 380)
+    .setSize(25,25)
+    .setFont(font_0)
+    ;
+    //Add button to increase or decrease temp setpoint for BP down
+    cp5.addToggle("BP_Temp_Down")
+    .setPosition(270, 380)
+    .setSize(25,25)
+    .setFont(font_0)
+    ;
+    
     
 
    
@@ -236,7 +266,11 @@ void draw(){  //same as loop in arduino
   text("Level Switch 1", 375, 320);
   text(level_switch_1, 375, 340);
   text("Level Switch 2", 375, 380);
-  text(level_switch_1, 375, 400);
+  text(level_switch_2, 375, 400);
+  text("HLT Setpoint", 200, 320);
+  text("BP Setpoint", 200, 380);
+  text(Integer.toString(HLT_Temp_Setpoint), 200, 340);
+  text(Integer.toString(BP_Temp_Setpoint), 200, 400);
  
  //Need to parse the toggle values to set up the message that we want to send to the Serial port
  //Need to have a lot of if statements looking at value of toggle value, and then have that set or reset a value
@@ -263,6 +297,8 @@ void draw(){  //same as loop in arduino
    //byte_2 &= ~(1 << 0);
  }  //this will clear all the bits in position 0-8.  Equates to 511 decimal
  else {}//transmit_message_1 |= 0 << 7; }
+ 
+ 
  if(PR1==true) {byte_2 |= 1 << 0;}
  else {byte_2 &= ~(1 << 0); }
  if(PR2==true) {byte_2 |= 1 << 1;}
@@ -273,8 +309,45 @@ void draw(){  //same as loop in arduino
  else {byte_2 &= ~(1 << 3); }
  if(ALL_PR_OFF==true) {byte_2 &= ~(255);} //this will clear all the bits in position 9-11.
  else {}//transmit_message_1 |= 0 << 7; }
- print("message 2 is ");
-      println(byte_2);
+ 
+//Temperature Setpoints Adjust 
+ if(HLT_Temp_Up==true) {HLT_Temp_Setpoint += 1;
+   HLT_Temp_Up = false;
+   byte_3 = HLT_Temp_Setpoint;
+   cp5.addToggle("HLT_Temp_Up")
+    .setPosition(240, 320)
+    .setSize(25,25)
+    .setFont(font_0);
+ }
+ else if (HLT_Temp_Down==true) {HLT_Temp_Setpoint -= 1;
+   HLT_Temp_Down = false;
+   byte_3 = HLT_Temp_Setpoint;
+   cp5.addToggle("HLT_Temp_Down")
+    .setPosition(270, 320)
+    .setSize(25,25)
+    .setFont(font_0);
+ }
+ if(BP_Temp_Up==true) {BP_Temp_Setpoint += 1;
+   BP_Temp_Up = false;
+   byte_4 = BP_Temp_Setpoint;
+   cp5.addToggle("BP_Temp_Up")
+    .setPosition(240, 380)
+    .setSize(25,25)
+    .setFont(font_0);
+ }
+ else if (BP_Temp_Down==true) {BP_Temp_Setpoint -= 1;
+   BP_Temp_Down = false;
+   byte_4 = BP_Temp_Setpoint;
+   cp5.addToggle("BP_Temp_Down")
+    .setPosition(270, 380)
+    .setSize(25,25)
+    .setFont(font_0);
+ }
+ 
+ print("message 3 is ");
+      println(byte_3);
+       print("message 4 is ");
+      println(byte_4);
   
   if ((byte_1 != old_byte_1)) { //| (byte_2 != old_byte_2) ){
     //port.write('x');
@@ -290,9 +363,19 @@ void draw(){  //same as loop in arduino
    port.write('b');
    port.write(Integer.toString(byte_2));
   }
+  if (byte_3 != old_byte_3) {
+   port.write('l');
+   port.write(byte_3);
+  }
+  if (byte_4 != old_byte_4) {
+   port.write('m');
+   port.write(Integer.toString(byte_4));
+  }
     
   old_byte_1 = byte_1;
   old_byte_2 = byte_2;
+  old_byte_3 = byte_3;
+  old_byte_4 = byte_4;
   
   while (port.available() > 0) {
     id_byte = port.read();
@@ -341,15 +424,19 @@ void draw(){  //same as loop in arduino
          case 0: 
            level_switch_1 = "OFF";
            level_switch_2 = "OFF";
+           break;
          case 1: 
            level_switch_1 = "ON";
            level_switch_2 = "OFF";
+           break;
          case 2: 
            level_switch_1 = "OFF";
            level_switch_2 = "ON";
+           break;
          case 3: 
            level_switch_1 = "ON";
-           level_switch_2 = "ON";         
+           level_switch_2 = "ON";     
+           break;  
       }
     }
   }

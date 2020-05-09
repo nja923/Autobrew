@@ -127,11 +127,15 @@ const byte NUMBER_OF_STATES = 4; //how many states are we cycling through?
 boolean toggle = false;
 boolean toggle_1 = false;
 unsigned char inByte, message_1_byte, message_6_byte, message_7_byte, message_8_byte, message_2_byte, message_3_byte, message_4_byte, message_5_byte, message_bad_byte;
+unsigned char message_9_byte, message_10_byte;
 int relay_array[16];
 boolean MT_TS_Status = true;
 boolean BP_TS_Status = true;
 boolean HLT_TS_Status = true;
 boolean Ferm_TS_Status = true;
+
+int HLT_Temp_Setpoint = 170;
+int BP_Temp_Setpoint = 210;
 
 boolean LS1 = false;
 boolean LS2 = false;
@@ -170,6 +174,8 @@ void WortToFermenter();
 void Fermenting();
 void message_1();
 void message_2();
+void message_9();
+void message_10();
 void read_HLT_TS();
 void read_MT_TS();
 void read_BP_TS();
@@ -575,25 +581,25 @@ void loop() {
 //    Serial.println(inByte);
     if (inByte == 'a') {
       message_1_byte = Serial.read();
-//      Serial.print("Message byte 1 received - ");
-//      Serial.println(message_1_byte);
-      //digitalWrite(Yellow_LED, LED_ON);
       message_1();
     }
     else if (inByte == 'b') {
       message_2_byte = Serial.read();
-      //Serial.print("Message byte 2 received - ");
-      //Serial.println(message_2_byte);
       message_2();
-    
+    }
+    else if (inByte == 'l') {
+      message_9_byte = Serial.read();
+      message_9();
+      
+    }
+    else if (inByte == 'm') {
+      message_10_byte = Serial.read();
+      message_10();
     }
     else {
       message_bad_byte = Serial.read();
       message_bad_byte = 64;
-//      Serial.print("Invalid message received - ");
-//      Serial.write(message_bad_byte);
     }
-//    Serial.println("");
   }
 
   if(HLT_TS_Status) {read_HLT_TS();}
@@ -604,8 +610,12 @@ void loop() {
   delay(1000);
 //  if(Ferm_TS_Status)  {read_Ferm_TS();}
 //  delay(1000);
-  LS1 = digitalRead(HLT_Level_Switch);
-  LS2 = digitalRead(BrewPotLevelSwitch);
+  LS1 = !digitalRead(HLT_Level_Switch);
+  LS2 = !digitalRead(BrewPotLevelSwitch);
+  if(LS2) {digitalWrite(Green_LED, LED_ON);}
+  else {digitalWrite(Green_LED, LED_OFF);}
+   if(LS1) {digitalWrite(Yellow_LED, LED_ON);}
+  else {digitalWrite(Yellow_LED, LED_OFF);}
   if(LS1 && LS2)  {message_8_byte = 3;}
   else if(LS2)    {message_8_byte = 2;} 
   else if(LS1)    {message_8_byte = 1;}
@@ -641,20 +651,43 @@ void message_1() {
 }
 
 void message_2() {
- // for(int x=0;x<8;x++) {
-   // relay_array[x] = bitRead(message_2_byte, x);
+  for(int x=0;x<8;x++) {
+  relay_array[x] = bitRead(message_2_byte, x);
 //    Serial.print("Relay ");
 //    Serial.print(x);
 //    Serial.print(" is ");
 //    Serial.println(relay_array[x]);
-  //}
+  }
 //  if(message_2_byte == 1  && message_2_byte == 3 && message_2_byte == 5 && message_2_byte == 7  && message_2_byte == 9 && message_2_byte == 11) {digitalWrite(HLT_Heater_Relay, RELAY_ON);}
 //  else digitalWrite(HLT_Heater_Relay, RELAY_ON);
+  if(HLTTempSensor < HLT_Temp_Setpoint) {
   digitalWrite(HLT_Heater_Relay, relay_array[0]);
+  }
+  else {
+    digitalWrite(HLT_Heater_Relay, RELAY_OFF);
+  }
+  if(BrewPotTempSensor < BP_Temp_Setpoint) {
   digitalWrite(BrewPot_Heater_Relay, relay_array[1]);
+  }
+  else {
+    digitalWrite(BrewPot_Heater_Relay, RELAY_OFF);
+  }
+  
   digitalWrite(Fermenter_Control_Relay, relay_array[2]);
   digitalWrite(Pump_Relay, relay_array[3]);
   return;
+}
+
+void message_9() {
+  HLT_Temp_Setpoint = message_9_byte;
+  if(HLT_Temp_Setpoint = 150) {
+    digitalWrite(Purple_LED, LED_ON);
+  }
+  else {digitalWrite(Purple_LED, LED_OFF);}
+}
+
+void message_10() {
+  BP_Temp_Setpoint = message_10_byte;
 }
 
 void show_response() {
