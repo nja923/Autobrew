@@ -288,7 +288,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   if(!ds_HLT.search(addr)){
     Serial.println("HLT temp sensor not found");
     ds_HLT.reset_search();
-    digitalWrite(Purple_LED, RELAY_ON);
+    //digitalWrite(Purple_LED, RELAY_ON);
     HLT_TS_Status = false;
     temp_sensor_var++;
   }
@@ -303,7 +303,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
   if(OneWire::crc8(addr, 7)!=addr[7]){
     Serial.print("HLT CRC is not valid!\n");
-    digitalWrite(Purple_LED, RELAY_ON);
+    //digitalWrite(Purple_LED, RELAY_ON);
     HLT_TS_Status = false;
     temp_sensor_var++;
   }
@@ -314,7 +314,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   ds_MT.reset_search();
   if(!ds_MT.search(addr)){
     Serial.println("Mash Tun temp sensor not found");
-    digitalWrite(Purple_LED, RELAY_ON);
+    //digitalWrite(Purple_LED, RELAY_ON);
     MT_TS_Status = false;
     ds_MT.reset_search();
     temp_sensor_var++;
@@ -329,7 +329,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
   if(OneWire::crc8(addr, 7)!=addr[7]){
     Serial.print("Mash Tun CRC is not valid!\n");
-    digitalWrite(Purple_LED, RELAY_ON);
+    //digitalWrite(Purple_LED, RELAY_ON);
     MT_TS_Status = false;
     temp_sensor_var++;
   }
@@ -339,7 +339,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   ds_BP.reset_search();
   if(!ds_BP.search(addr)){
     Serial.println("Brew pot temp sensor not found");
-    digitalWrite(Purple_LED, RELAY_ON);
+    //digitalWrite(Purple_LED, RELAY_ON);
     BP_TS_Status = false;
     ds_BP.reset_search();
     temp_sensor_var++;
@@ -354,7 +354,7 @@ void setup()   /****** SETUP: RUNS ONCE ******/
 
   if(OneWire::crc8(addr, 7)!=addr[7]){
     Serial.print("Brew Pot CRC is not valid!\n");
-    digitalWrite(Purple_LED, RELAY_ON);
+    //digitalWrite(Purple_LED, RELAY_ON);
     BP_TS_Status = false;
     temp_sensor_var++;
   }
@@ -660,7 +660,9 @@ void message_2() {
   }
 //  if(message_2_byte == 1  && message_2_byte == 3 && message_2_byte == 5 && message_2_byte == 7  && message_2_byte == 9 && message_2_byte == 11) {digitalWrite(HLT_Heater_Relay, RELAY_ON);}
 //  else digitalWrite(HLT_Heater_Relay, RELAY_ON);
-  if(HLTTempSensor < HLT_Temp_Setpoint) {
+digitalWrite(HLT_Heater_Relay, relay_array[0]);
+digitalWrite(BrewPot_Heater_Relay, relay_array[1]);
+  /*if(HLTTempSensor < HLT_Temp_Setpoint) {
   digitalWrite(HLT_Heater_Relay, relay_array[0]);
   }
   else {
@@ -671,7 +673,7 @@ void message_2() {
   }
   else {
     digitalWrite(BrewPot_Heater_Relay, RELAY_OFF);
-  }
+  }*/
   
   digitalWrite(Fermenter_Control_Relay, relay_array[2]);
   digitalWrite(Pump_Relay, relay_array[3]);

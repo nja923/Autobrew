@@ -299,16 +299,22 @@ void draw(){  //same as loop in arduino
  else {}//transmit_message_1 |= 0 << 7; }
  
  
- if(PR1==true) {byte_2 |= 1 << 0;}
- else {byte_2 &= ~(1 << 0); }
- if(PR2==true) {byte_2 |= 1 << 1;}
- else {byte_2 &= ~(1 << 1); }
- if(PR3==true) {byte_2 |= 1 << 2;}
- else {byte_2 &= ~(1 << 2); }
- if(PR4==true) {byte_2 |= 1 << 3;}
- else {byte_2 &= ~(1 << 3); }
- if(ALL_PR_OFF==true) {byte_2 &= ~(255);} //this will clear all the bits in position 9-11.
- else {}//transmit_message_1 |= 0 << 7; }
+ if(HLT_Temp_Setpoint > int(temp_sensor_1)) {
+   if(PR1==true) {byte_2 |= 1 << 0;}
+   else {byte_2 &= ~(1 << 0); }
+ }
+ else {byte_2 &= ~(1 << 0);} 
+ if(BP_Temp_Setpoint > int(temp_sensor_3)) {
+   if(PR2==true) {byte_2 |= 1 << 1;}
+   else {byte_2 &= ~(1 << 1); } 
+ }
+ else {byte_2 &= ~(1 << 1); } 
+   if(PR3==true) {byte_2 |= 1 << 2;}
+   else {byte_2 &= ~(1 << 2); }
+   if(PR4==true) {byte_2 |= 1 << 3;}
+   else {byte_2 &= ~(1 << 3); }
+   if(ALL_PR_OFF==true) {byte_2 &= ~(255);} //this will clear all the bits in position 9-11.
+   else {}//transmit_message_1 |= 0 << 7; }
  
 //Temperature Setpoints Adjust 
  if(HLT_Temp_Up==true) {HLT_Temp_Setpoint += 1;
